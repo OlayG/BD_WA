@@ -1,41 +1,35 @@
 package com.example.lowesweatherapp.view
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.lowesweatherapp.R
 import com.example.lowesweatherapp.adapter.AllWeatherAdapter
 import com.example.lowesweatherapp.databinding.FragmentAllWeatherBinding
-import com.example.lowesweatherapp.viewmodel.LookupFragmentViewModel
+import com.example.lowesweatherapp.model.AllWeather
+import com.example.lowesweatherapp.util.init
 
-class AllWeatherFragment : Fragment() {
-    private lateinit var binding: FragmentAllWeatherBinding
+class AllWeatherFragment : Fragment(R.layout.fragment_all_weather) {
     private val arguments by navArgs<AllWeatherFragmentArgs>()
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ) = FragmentAllWeatherBinding.inflate(
-        inflater, container, false)
-        .also { binding = it }.root
+    private val weatherAdapter by lazy {
+        AllWeatherAdapter(arguments.myWeather.toList(), ::handleWeatherClick)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.toolbar.title = arguments.myWeather.city?.name
-        binding.toolbar.setNavigationOnClickListener {
-            findNavController().navigateUp()
+        with(FragmentAllWeatherBinding.bind(view)) {
+            toolbar.init(arguments.city)
+            rvWeather.adapter = weatherAdapter
         }
+    }
 
-        binding.rvWeather.layoutManager = LinearLayoutManager(this.context)
-        binding.rvWeather.adapter = arguments.myWeather.list?.let { AllWeatherAdapter(it) { allWeather ->
-            val action = AllWeatherFragmentDirections.actionAllWeatherFragmentToSelectedWeatherFragment(allWeather, arguments.myWeather.city?.name.toString())
-            findNavController().navigate(action)
-        } }
+    private fun handleWeatherClick(weather: AllWeather) = with(findNavController()) {
+        navigate(
+            AllWeatherFragmentDirections.actionAllWeatherFragmentToSelectedWeatherFragment(
+                weather, arguments.city
+            )
+        )
     }
 }

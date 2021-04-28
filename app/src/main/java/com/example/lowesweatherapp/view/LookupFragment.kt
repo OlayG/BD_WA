@@ -1,50 +1,44 @@
 package com.example.lowesweatherapp.view
 
-import android.content.Context
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
-import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
+import com.example.lowesweatherapp.R
 import com.example.lowesweatherapp.databinding.FragmentLookupBinding
+import com.example.lowesweatherapp.model.AllWeather
+import com.example.lowesweatherapp.util.DataState
 import com.example.lowesweatherapp.viewmodel.LookupFragmentViewModel
 
-class LookupFragment : Fragment() {
-    private lateinit var binding: FragmentLookupBinding
+class LookupFragment : Fragment(R.layout.fragment_lookup) {
     private val viewModel by viewModels<LookupFragmentViewModel>()
-    private lateinit var action:  NavDirections
-    private var isAction = false // if you go back the observer is called for the data already in it (first city search)
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ) = FragmentLookupBinding.inflate(inflater, container, false)
-        .also { binding = it }.root
+    private lateinit var binding: FragmentLookupBinding
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        isAction = false
-        binding.btnLookup.setOnClickListener {
-            isAction = true
-            viewModel.getMyWeatherResponse(binding.etCity.text.toString())
-            // this could be bad but idea is wait until we have weather to go to next fragment
+        binding = FragmentLookupBinding.bind(view).apply {
+            btnLookup.setOnClickListener { viewModel.query = etCity.text.toString() }
         }
-        viewModel.myWeatherResponse.observe(this.viewLifecycleOwner, Observer { response ->
-            if(response.isSuccessful) {
-                response.body()?.let { myWeather ->
-                    action = LookupFragmentDirections.actionLookupFragmentToAllWeatherFragment(myWeather)
-                    if(isAction) findNavController().navigate(action)
+        with(viewModel) {
+            state.observe(viewLifecycleOwner) {
+                if (it is DataState.Success) navigateToWeatherList(query, it.data.toTypedArray())
+                with(binding.textFieldLayout) {
+                    isErrorEnabled = if (it is DataState.Error) {
+                        error = it.errMsg;true
+                    } else false
                 }
-            } else {
-                Toast.makeText(context, response.message(),Toast.LENGTH_LONG).show()
+                binding.loader.isVisible = it is DataState.Loading
+                binding.btnLookup.isEnabled = it !is DataState.Loading
             }
-        })
+        }
+    }
+
+    private fun navigateToWeatherList(
+        city: String, data: Array<AllWeather>
+    ) = with(findNavController()) {
+        navigate(LookupFragmentDirections.actionLookupFragmentToAllWeatherFragment(data, city))
+        viewModel.hasNavigated = true
     }
 }
