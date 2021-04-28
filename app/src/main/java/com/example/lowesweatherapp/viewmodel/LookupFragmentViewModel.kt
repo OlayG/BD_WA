@@ -1,23 +1,40 @@
 package com.example.lowesweatherapp.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.lowesweatherapp.model.MyWeather
+import androidx.lifecycle.*
+import com.example.lowesweatherapp.model.AllWeather
 import com.example.lowesweatherapp.repo.WeatherRepo
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import retrofit2.Response
+import com.example.lowesweatherapp.util.DataState
 
 class LookupFragmentViewModel : ViewModel() {
-    private val _myWeatherResponse = MutableLiveData<Response<MyWeather?>>()
-    val myWeatherResponse: LiveData<Response<MyWeather?>> get() = _myWeatherResponse
 
-    fun getMyWeatherResponse(city: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val myWeatherResponse = WeatherRepo.getWeatherResponse(city)
-            _myWeatherResponse.postValue(myWeatherResponse)
+    private val queryLd = MutableLiveData<String>()
+    private val hasNavigatedLd = MutableLiveData<Boolean>()
+
+    val state: LiveData<DataState<List<AllWeather>>> =
+        MediatorLiveData<DataState<List<AllWeather>>>().apply {
+            addSource(hasNavigatedLd) {
+                if (it) {
+                    value = DataState.NoAction
+                    hasNavigated = false
+                }
+            }
+            addSource(queryLd) {
+                addSource(WeatherRepo.getWeatherResponse(it).asLiveData()) { state ->
+                    value = state
+                }
+            }
         }
-    }
+
+    var query: String = ""
+        set(value) {
+            queryLd.value = value
+            field = value
+        }
+
+    var hasNavigated: Boolean = false
+        set(value) {
+            hasNavigatedLd.value = value
+            field = value
+        }
+
 }

@@ -24,7 +24,12 @@
             app:destination="@id/selectedWeatherFragment" />
         <argument
             android:name="myWeather"
-            app:argType="com.example.lowesweatherapp.model.MyWeather" />
+            app:argType="com.example.lowesweatherapp.model.AllWeather[]"
+            app:nullable="false" />
+        <argument
+            android:name="city"
+            app:argType="string"
+            app:nullable="false" />
 
     </fragment>
     <fragment
@@ -34,10 +39,12 @@
         tools:layout="@layout/fragment_selected_weather">
         <argument
             android:name="selectedWeather"
-            app:argType="com.example.lowesweatherapp.model.AllWeather" />
+            app:argType="com.example.lowesweatherapp.model.AllWeather"
+            app:nullable="false" />
         <argument
             android:name="city"
-            app:argType="string" />
+            app:argType="string"
+            app:nullable="false" />
     </fragment>
 
 </navigation>
