@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/lookupFragment">
+
+    <fragment
+        android:id="@+id/lookupFragment"
+        android:name="com.example.lowesweatherapp.view.LookupFragment"
+        android:label="LookupFragment"
+        tools:layout="@layout/fragment_lookup">
+        <action
+            android:id="@+id/action_lookupFragment_to_allWeatherFragment"
+            app:destination="@id/allWeatherFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/allWeatherFragment"
+        android:name="com.example.lowesweatherapp.view.AllWeatherFragment"
+        android:label="AllWeatherFragment"
+        tools:layout="@layout/fragment_all_weather">
+        <action
+            android:id="@+id/action_allWeatherFragment_to_selectedWeatherFragment"
+            app:destination="@id/selectedWeatherFragment" />
+        <argument
+            android:name="myWeather"
+            app:argType="com.example.lowesweatherapp.model.MyWeather" />
+
+    </fragment>
+    <fragment
+        android:id="@+id/selectedWeatherFragment"
+        android:name="com.example.lowesweatherapp.view.SelectedWeatherFragment"
+        android:label="SelectedWeatherFragment"
+        tools:layout="@layout/fragment_selected_weather">
+        <argument
+            android:name="selectedWeather"
+            app:argType="com.example.lowesweatherapp.model.AllWeather" />
+        <argument
+            android:name="city"
+            app:argType="string" />
+    </fragment>
+
+</navigation>
